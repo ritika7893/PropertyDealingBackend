@@ -1,8 +1,9 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin
+)
 
 
 class RegistrationManager(BaseUserManager):
@@ -15,17 +16,31 @@ class RegistrationManager(BaseUserManager):
         user = self.model(
             mobile_number=mobile_number,
             name=name,
-            role=role
+            role=role,
         )
 
         user.set_password(password)
+        user.save(using=self._db)
 
+        return user
+
+    def create_superuser(self, mobile_number, name, password):
+
+        user = self.create_user(
+            mobile_number=mobile_number,
+            name=name,
+            password=password,
+            role="admin"
+        )
+
+        user.is_staff = True
+        user.is_superuser = True
         user.save(using=self._db)
 
         return user
 
 
-class Registration(AbstractBaseUser):
+class Registration(AbstractBaseUser, PermissionsMixin):
 
     ROLE_CHOICES = (
         ("admin", "Admin"),
@@ -52,29 +67,26 @@ class Registration(AbstractBaseUser):
     )
 
     is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
 
     objects = RegistrationManager()
 
     USERNAME_FIELD = "mobile_number"
-
     REQUIRED_FIELDS = ["name"]
 
     def save(self, *args, **kwargs):
 
         if not self.user_id:
 
-            last_user = Registration.objects.all().order_by("id").last()
+            last_user = Registration.objects.order_by("id").last()
 
-            if last_user:
-
+            if last_user and last_user.user_id:
                 try:
                     last_id = int(last_user.user_id.split("-")[1])
-
                 except (IndexError, ValueError):
                     last_id = 0
 
                 new_id = last_id + 1
-
             else:
                 new_id = 1
 
@@ -84,5 +96,3 @@ class Registration(AbstractBaseUser):
 
     def __str__(self):
         return self.name
-
-

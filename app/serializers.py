@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Booking, BookingMember, Feedback, Registration, PhoneOTP, Place, Hotel
+from .models import  Registration
 
 
 # ---------------- REGISTER ----------------

@@ -7,7 +7,7 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-#AUTH_USER_MODEL = 'app.Registration'
+AUTH_USER_MODEL = 'app.Registration'
 
 # Load .env
 load_dotenv(BASE_DIR / '.env')

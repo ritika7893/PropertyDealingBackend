@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import  Registration
+from .models import  Property, Registration
 
 
 # ---------------- REGISTER ----------------
@@ -12,3 +12,7 @@ class LoginUserSerializer(serializers.Serializer):
 class RefreshTokenSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
 # ---------------- SEND OTP ----------------
+class PropertySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Property
+        fields = "__all__"

@@ -96,3 +96,68 @@ class Registration(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.name
+
+class Property(models.Model):
+
+    PROPERTY_TYPE_CHOICES = [
+        ("villa", "Villa"),
+        ("penthouse", "Penthouse"),
+        ("house", "House"),
+        ("loft", "Loft"),
+        ("estate", "Estate"),
+        ("home", "Home"),
+        ("townhouse", "Townhouse"),
+        ("apartment", "Apartment"),
+    ]
+
+    STATUS_CHOICES = [
+        ("for_sale", "For Sale"),
+        ("for_rent", "For Rent"),
+        ("sold", "Sold"),
+    ]
+
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+
+    price = models.DecimalField(
+        max_digits=15,
+        decimal_places=2
+    )
+
+    location = models.CharField(max_length=255)
+
+    bedrooms = models.PositiveIntegerField(default=0)
+    bathrooms = models.PositiveIntegerField(default=0)
+
+    area_sqft = models.PositiveIntegerField()
+
+    property_type = models.CharField(
+        max_length=20,
+        choices=PROPERTY_TYPE_CHOICES
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="for_sale"
+    )
+
+    featured_image = models.ImageField(
+        upload_to="properties/",blank=True,null=True
+    )
+
+    amenities = models.JSONField(default=list)
+
+    year_built = models.PositiveIntegerField(
+        null=True,
+        blank=True
+    )
+
+    listing_date = models.DateField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.title

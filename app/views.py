@@ -2,9 +2,9 @@ from shlex import quote
 from django.utils import timezone
 import random
 import requests
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, AllowAny, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from app.models import Registration
+from app.models import Property, Registration
 from app.permissions import IsAdminUserCustom
 
 
@@ -17,7 +17,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 
 from django.contrib.auth.hashers import check_password
 
-from app.serializers import LoginUserSerializer, RefreshTokenSerializer
+from app.serializers import LoginUserSerializer, PropertySerializer, RefreshTokenSerializer
 
 
 # ================= REGISTER USER =================
@@ -166,3 +166,106 @@ class RefreshTokenAPI(APIView):
                 "message": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+
+class PropertyListCreateAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUserCustom]
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return super().get_permissions()
+
+    def get(self, request):
+        properties = Property.objects.all().order_by("-created_at")
+        serializer = PropertySerializer(properties, many=True)
+
+        return Response({
+            "status": True,
+            "data": serializer.data
+        })
+
+    def post(self, request):
+        serializer = PropertySerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response({
+                "status": True,
+                "message": "Property created successfully",
+                "data": serializer.data
+            }, status=status.HTTP_201_CREATED)
+
+        return Response({
+            "status": False,
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PropertyDetailAPIView(APIView):
+
+    def get_object(self, pk):
+        try:
+            return Property.objects.get(id=pk)
+        except Property.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        property_obj = self.get_object(pk)
+
+        if not property_obj:
+            return Response({
+                "status": False,
+                "message": "Property not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = PropertySerializer(property_obj)
+
+        return Response({
+            "status": True,
+            "data": serializer.data
+        })
+
+    def put(self, request, pk):
+        property_obj = self.get_object(pk)
+
+        if not property_obj:
+            return Response({
+                "status": False,
+                "message": "Property not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = PropertySerializer(
+            property_obj,
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response({
+                "status": True,
+                "message": "Property updated successfully",
+                "data": serializer.data
+            })
+
+        return Response({
+            "status": False,
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        property_obj = self.get_object(pk)
+
+        if not property_obj:
+            return Response({
+                "status": False,
+                "message": "Property not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        property_obj.delete()
+
+        return Response({
+            "status": True,
+            "message": "Property deleted successfully"
+        }, status=status.HTTP_200_OK)

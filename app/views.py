@@ -277,11 +277,16 @@ class PropertyDetailAPIView(APIView):
     
 class ContactAPIView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsAdminUserCustom]
+
+    def get_authenticators(self):
+        if self.request.method == "POST":
+            return []
+        return super().get_authenticators()
+
     def get_permissions(self):
         if self.request.method == "POST":
             return [AllowAny()]
-        return super().get_permissions()
+        return [IsAuthenticated(), IsAdminUserCustom()]
     def get(self, request):
         contacts = Contact.objects.all().order_by("-created_at")
 

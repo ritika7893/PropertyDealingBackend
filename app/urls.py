@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import LoginUser, PropertyDetailAPIView, PropertyListCreateAPIView, RefreshTokenAPI
+from .views import ContactAPIView, LoginUser, PropertyDetailAPIView, PropertyListCreateAPIView, RefreshTokenAPI
 urlpatterns = [
    
     path('login/', LoginUser.as_view()),
@@ -8,6 +8,7 @@ urlpatterns = [
     path("properties/",PropertyListCreateAPIView.as_view(),name="property-list-create"),
 
     path("properties/<int:pk>/",PropertyDetailAPIView.as_view(),name="property-detail"),
+    path("contact/",ContactAPIView.as_view(),name="contact"),
     
 
 ]

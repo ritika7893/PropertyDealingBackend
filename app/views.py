@@ -4,7 +4,7 @@ import random
 import requests
 from rest_framework.permissions import AllowAny, AllowAny, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from app.models import Property, Registration
+from app.models import Contact, Property, Registration
 from app.permissions import IsAdminUserCustom
 
 
@@ -17,7 +17,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 
 from django.contrib.auth.hashers import check_password
 
-from app.serializers import LoginUserSerializer, PropertySerializer, RefreshTokenSerializer
+from app.serializers import ContactSerializer, LoginUserSerializer, PropertySerializer, RefreshTokenSerializer
 
 
 # ================= REGISTER USER =================
@@ -203,7 +203,12 @@ class PropertyListCreateAPIView(APIView):
 
 
 class PropertyDetailAPIView(APIView):
-
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUserCustom]
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return super().get_permissions()
     def get_object(self, pk):
         try:
             return Property.objects.get(id=pk)
@@ -269,3 +274,42 @@ class PropertyDetailAPIView(APIView):
             "status": True,
             "message": "Property deleted successfully"
         }, status=status.HTTP_200_OK)
+    
+class ContactAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUserCustom]
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [AllowAny()]
+        return super().get_permissions()
+    def get(self, request):
+        contacts = Contact.objects.all().order_by("-created_at")
+
+        serializer = ContactSerializer(
+            contacts,
+            many=True
+        )
+
+        return Response({
+            "status": True,
+            "data": serializer.data
+        })
+
+    def post(self, request):
+        serializer = ContactSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response({
+                "status": True,
+                "message": "Message sent successfully",
+                "data": serializer.data
+            })
+
+        return Response({
+            "status": False,
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)

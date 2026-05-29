@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import  Property, Registration
+from .models import  Contact, Property, Registration
 
 
 # ---------------- REGISTER ----------------
@@ -16,3 +16,9 @@ class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
         fields = "__all__"
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = "__all__"
+        read_only_fields = ["id", "created_at"]

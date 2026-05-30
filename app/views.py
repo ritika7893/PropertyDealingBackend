@@ -342,7 +342,12 @@ class PropertyBulkCreateAPIView(APIView):
 
 
 class TestimonialListCreateAPIView(APIView):
-
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUserCustom]
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return super().get_permissions()
     def get(self, request):
         testimonials = Testimonial.objects.all().order_by('-created_at')
         serializer = TestimonialSerializer(testimonials, many=True)
@@ -358,7 +363,12 @@ class TestimonialListCreateAPIView(APIView):
 
 # GET one + PUT + DELETE
 class TestimonialDetailAPIView(APIView):
-
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUserCustom]
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return super().get_permissions()
     def get_object(self, pk):
         return get_object_or_404(Testimonial, pk=pk)
 

@@ -318,3 +318,24 @@ class ContactAPIView(APIView):
             "status": False,
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+class PropertyBulkCreateAPIView(APIView):
+    def post(self, request):
+        serializer = PropertySerializer(
+            data=request.data,
+            many=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response({
+                "status": True,
+                "message": f"{len(serializer.data)} properties created successfully",
+                "data": serializer.data
+            }, status=status.HTTP_201_CREATED)
+
+        return Response({
+            "status": False,
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)

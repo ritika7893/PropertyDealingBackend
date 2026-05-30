@@ -4,9 +4,9 @@ import random
 import requests
 from rest_framework.permissions import AllowAny, AllowAny, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from app.models import Contact, Property, Registration
+from app.models import Contact, Property, Registration, Testimonial
 from app.permissions import IsAdminUserCustom
-
+from django.shortcuts import get_object_or_404
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,7 +17,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 
 from django.contrib.auth.hashers import check_password
 
-from app.serializers import ContactSerializer, LoginUserSerializer, PropertySerializer, RefreshTokenSerializer
+from app.serializers import ContactSerializer, LoginUserSerializer, PropertySerializer, RefreshTokenSerializer, TestimonialSerializer
 
 
 # ================= REGISTER USER =================
@@ -339,3 +339,46 @@ class PropertyBulkCreateAPIView(APIView):
             "status": False,
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TestimonialListCreateAPIView(APIView):
+
+    def get(self, request):
+        testimonials = Testimonial.objects.all().order_by('-created_at')
+        serializer = TestimonialSerializer(testimonials, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = TestimonialSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# GET one + PUT + DELETE
+class TestimonialDetailAPIView(APIView):
+
+    def get_object(self, pk):
+        return get_object_or_404(Testimonial, pk=pk)
+
+    def get(self, request, pk):
+        testimonial = self.get_object(pk)
+        serializer = TestimonialSerializer(testimonial)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        testimonial = self.get_object(pk)
+        serializer = TestimonialSerializer(testimonial, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        testimonial = self.get_object(pk)
+        testimonial.delete()
+        return Response(
+            {"message": "Deleted successfully"},
+            status=status.HTTP_204_NO_CONTENT
+        )

@@ -174,3 +174,15 @@ class Contact(models.Model):
 
     def __str__(self):
         return self.subject
+
+
+class Testimonial(models.Model):
+    name = models.CharField(max_length=255)
+    person_imge = models.ImageField(upload_to="testimonials/", blank=True, null=True)
+    designation = models.CharField(max_length=255)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+    
